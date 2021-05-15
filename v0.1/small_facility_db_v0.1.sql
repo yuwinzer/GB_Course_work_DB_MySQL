@@ -44,7 +44,7 @@ CREATE TABLE media (
   PRIMARY KEY (id),
   UNIQUE KEY media_idx (file_name),
   KEY fk_media_media_types (media_types_id),
-  CONSTRAINT fk_media_media_types FOREIGN KEY (media_types_id) REFERENCES media_types (id)
+  CONSTRAINT fk_med_media_types FOREIGN KEY (media_types_id) REFERENCES media_types (id)
 ) ENGINE=InnoDB;
 
 -- ========================================  warehouses
@@ -95,8 +95,8 @@ CREATE TABLE profiles (
 	country varchar(64) DEFAULT NULL, -- hidden for other
 	PRIMARY KEY (user_id),
 	KEY profiles_photo_fk (photo_id),
-	CONSTRAINT fk_pr_profiles_users FOREIGN KEY (user_id) REFERENCES users (id),
-	CONSTRAINT fk_pr_profiles_photo FOREIGN KEY (photo_id) REFERENCES media (id)
+	CONSTRAINT fk_prf_profiles_users FOREIGN KEY (user_id) REFERENCES users (id),
+	CONSTRAINT fk_prf_profiles_photo FOREIGN KEY (photo_id) REFERENCES media (id)
 ) ENGINE=InnoDB;
 
 -- ========================================  backorders
@@ -119,7 +119,7 @@ CREATE TABLE components_types (
 	units_id TINYINT UNSIGNED NOT NULL,
 	PRIMARY KEY (id),
 	UNIQUE KEY components_types_idx (name),
-	CONSTRAINT fk_ct_units_id FOREIGN KEY (units_id) REFERENCES unit_types (id)
+	CONSTRAINT fk_ctyp_units_id FOREIGN KEY (units_id) REFERENCES unit_types (id)
 ) ENGINE=InnoDB;
 
 INSERT INTO components_types VALUES
@@ -149,8 +149,8 @@ CREATE TABLE components_examples (
 	image_id bigint UNSIGNED DEFAULT NULL,
 	PRIMARY KEY (id),
 	UNIQUE KEY components_examples_idx (manuf, name, color),
-	CONSTRAINT fk_ce_type_id FOREIGN KEY (type_id) REFERENCES components_types (id),
-	CONSTRAINT fk_ce_image_id FOREIGN KEY (image_id) REFERENCES media (id)
+	CONSTRAINT fk_cxmpl_type_id FOREIGN KEY (type_id) REFERENCES components_types (id),
+	CONSTRAINT fk_cxmpl_image_id FOREIGN KEY (image_id) REFERENCES media (id)
 ) ENGINE=InnoDB;
 
 INSERT INTO components_examples VALUES
@@ -201,150 +201,142 @@ CREATE TABLE components (
 ) ENGINE=InnoDB;
 
 -- =====================================================================
--- ========================================  product_types
-DROP TABLE IF EXISTS product_types;
-CREATE TABLE product_types (
-	id TINYINT UNSIGNED AUTO_INCREMENT,
-	name varchar(16) NOT NULL,
-	PRIMARY KEY (id),
-	UNIQUE KEY name (name)
-) ENGINE=InnoDB;
-
-INSERT INTO product_types VALUES
-	(1, 'furniture'), -- мягкая и твердая мебель, подушки, пуфы, ковры
-	(2, 'doll_parts'), -- смола, покрытия, дополнительное !в разработке
-	(3, 'dresses'), -- ткани, дополнительное !в разработке
-	(4, 'wigs'), -- смолы, волосы, магниты !в разработке
-	(5, 'other'); -- резерв !в разработке
-	
--- =====================================================================
--- ========================================  furniture_designs
-DROP TABLE IF EXISTS furniture_designs;
-CREATE TABLE furniture_designs (
-	id TINYINT UNSIGNED AUTO_INCREMENT,
-	name varchar(16),
-	PRIMARY KEY (id),
-	UNIQUE KEY name (name)
-) ENGINE=InnoDB;
-
-INSERT INTO furniture_designs VALUES
-	(NULL, 'baroque'),
-	(NULL, 'classical');
-
--- ========================================  furniture_types
-DROP TABLE IF EXISTS furniture_types;
-CREATE TABLE furniture_types (
+-- ========================================  product_category
+DROP TABLE IF EXISTS product_category;
+CREATE TABLE product_category (
 	id SMALLINT UNSIGNED AUTO_INCREMENT,
 	name varchar(16) NOT NULL,
 	PRIMARY KEY (id),
 	UNIQUE KEY name (name)
 ) ENGINE=InnoDB;
 
-INSERT INTO furniture_types VALUES
-	(NULL, 'armchair'),
-	(NULL, 'chair'),
-	(NULL, 'barstool'),
-	(NULL, 'sofa'),
-	(NULL, 'table'),
-	(NULL, 'stand'),
-	(NULL, 'vase_stand'),
-	(NULL, 'pillow'),
-	(NULL, 'statuette'),
-	(NULL, 'fireplace');
+INSERT INTO product_category VALUES
+	(1, 'furniture'), -- мягкая и твердая мебель, подушки, пуфы, ковры
+	(2, 'doll_parts'), -- смола, покрытия, дополнительное !в разработке
+	(3, 'dresses'), -- ткани, дополнительное !в разработке
+	(4, 'wigs'), -- смолы, волосы, магниты !в разработке
+	(5, 'other'); -- резерв !в разработке
 
--- ========================================  furniture_examples
-DROP TABLE IF EXISTS furniture_examples;
-CREATE TABLE furniture_examples (
-	id bigint UNSIGNED AUTO_INCREMENT,
-	prod_type_id TINYINT UNSIGNED NOT NULL,
-	furn_design_id TINYINT UNSIGNED NOT NULL,
-	furn_type_id SMALLINT UNSIGNED NOT NULL,
+-- =====================================================================
+-- ========================================  product_designs
+DROP TABLE IF EXISTS product_designs;
+CREATE TABLE product_designs (
+	id SMALLINT UNSIGNED AUTO_INCREMENT,
+	prod_cat_id SMALLINT UNSIGNED,
+	name varchar(16),
+	PRIMARY KEY (id),
+	UNIQUE KEY prod_cat_idx_name (prod_cat_id, name),
+	CONSTRAINT fk_pdsn_prod_cat_id FOREIGN KEY (prod_cat_id) REFERENCES product_category (id)
+) ENGINE=InnoDB;
+
+INSERT INTO product_designs VALUES
+	(NULL, 1, 'baroque'),
+	(NULL, 1, 'classical'),
+	(NULL, 2, '1A'),
+	(NULL, 2, '2B'),
+	(NULL, 3, 'amelie'),
+	(NULL, 3, 'antoinette');
+
+-- ========================================  product_types
+DROP TABLE IF EXISTS product_types;
+CREATE TABLE product_types (
+	id SMALLINT UNSIGNED AUTO_INCREMENT,
+	prod_cat_id SMALLINT UNSIGNED,
+	name varchar(16) NOT NULL,
+	PRIMARY KEY (id),
+	UNIQUE KEY prod_cat_idx_name (prod_cat_id, name),
+	CONSTRAINT fk_ptyp_prod_cat_id FOREIGN KEY (prod_cat_id) REFERENCES product_category (id)
+) ENGINE=InnoDB;
+
+INSERT INTO product_types VALUES
+	(NULL, 1, 'armchair'),
+	(NULL, 1, 'chair'),
+	(NULL, 1, 'barstool'),
+	(NULL, 1, 'sofa'),
+	(NULL, 1, 'table'),
+	(NULL, 1, 'stand'),
+	(NULL, 1, 'vase_stand'),
+	(NULL, 1, 'pillow'),
+	(NULL, 1, 'statuette'),
+	(NULL, 1, 'fireplace'),
+	(NULL, 2, 'face'),
+	(NULL, 2, 'head'),
+	(NULL, 2, 'upperarm_left'),
+	(NULL, 2, 'forearm_left'),
+	(NULL, 2, 'hand_open_left');
+
+-- ========================================  product_examples
+DROP TABLE IF EXISTS product_examples;
+CREATE TABLE product_examples (
+	id bigint UNSIGNED AUTO_INCREMENT, -- id of unique template
+	prod_cat_id SMALLINT UNSIGNED NOT NULL,
+	prod_design_id SMALLINT UNSIGNED NOT NULL,
+	prod_type_id SMALLINT UNSIGNED NOT NULL,
 	name VARCHAR(64) DEFAULT NULL,
+	prod_size TINYINT UNSIGNED NOT NULL,
 	SCU VARCHAR(64) NOT NULL,
-	comp_filament int UNSIGNED DEFAULT NULL,
-	comp_filament_amount FLOAT NOT NULL DEFAULT '0',
-	comp_resin int UNSIGNED DEFAULT NULL,
-	comp_resin_amount FLOAT NOT NULL DEFAULT '0',
-	comp_fabric int UNSIGNED DEFAULT NULL,
-	comp_fabric_amount FLOAT NOT NULL DEFAULT '0',
-	comp_stuffing int UNSIGNED DEFAULT NULL,
-	comp_stuffing_amount FLOAT NOT NULL DEFAULT '0',
-	comp_cord int UNSIGNED DEFAULT NULL,
-	comp_cord_amount FLOAT NOT NULL DEFAULT '0',
-	comp_foam_rubber int UNSIGNED DEFAULT NULL,
-	comp_foam_rubber_amount FLOAT NOT NULL DEFAULT '0',
-	comp_carton int UNSIGNED DEFAULT NULL,
-	comp_carton_amount FLOAT NOT NULL DEFAULT '0',
-	comp_thermoglue int UNSIGNED DEFAULT NULL,
-	comp_thermoglue_amount FLOAT NOT NULL DEFAULT '0',
-	comp_primer int UNSIGNED DEFAULT NULL,
-	comp_primer_amount FLOAT NOT NULL DEFAULT '0',
-	comp_paint int UNSIGNED DEFAULT NULL,
-	comp_paint_amount FLOAT NOT NULL DEFAULT '0',
-	comp_varnish int UNSIGNED DEFAULT NULL,
-	comp_varnish_amount FLOAT NOT NULL DEFAULT '0',
-	comp_accessory_1 int UNSIGNED DEFAULT NULL,
-	comp_accessory_1_amount FLOAT NOT NULL DEFAULT '0',
-	comp_accessory_2 int UNSIGNED DEFAULT NULL,
-	comp_accessory_2_amount FLOAT NOT NULL DEFAULT '0',
-	comp_accessory_3 int UNSIGNED DEFAULT NULL,
-	comp_accessory_3_amount FLOAT NOT NULL DEFAULT '0',
+	image_id bigint UNSIGNED DEFAULT NULL,
 	PRIMARY KEY (id),
 	UNIQUE KEY SCU (SCU),
 	KEY name (name),
-	KEY furn_design_idx (furn_design_id),
-	KEY furn_type_idx (furn_type_id),
-	CONSTRAINT fk_fe_prod_type_id FOREIGN KEY (prod_type_id) REFERENCES product_types (id),
-	CONSTRAINT fk_fe_furn_design_id FOREIGN KEY (furn_design_id) REFERENCES furniture_designs (id),
-	CONSTRAINT fk_fe_furn_type_id FOREIGN KEY (furn_type_id) REFERENCES furniture_types (id),
-	CONSTRAINT fk_fe_comp_filament FOREIGN KEY (comp_filament) REFERENCES components_examples (id),
-	CONSTRAINT fk_fe_comp_resin FOREIGN KEY (comp_resin) REFERENCES components_examples (id),
-	CONSTRAINT fk_fe_comp_fabric FOREIGN KEY (comp_fabric) REFERENCES components_examples (id),
-	CONSTRAINT fk_fe_comp_stuffing FOREIGN KEY (comp_stuffing) REFERENCES components_examples (id),
-	CONSTRAINT fk_fe_comp_cord FOREIGN KEY (comp_cord) REFERENCES components_examples (id),
-	CONSTRAINT fk_fe_comp_foam_rubber FOREIGN KEY (comp_foam_rubber) REFERENCES components_examples (id),
-	CONSTRAINT fk_fe_comp_carton FOREIGN KEY (comp_carton) REFERENCES components_examples (id),
-	CONSTRAINT fk_fe_comp_thermoglue FOREIGN KEY (comp_thermoglue) REFERENCES components_examples (id),
-	CONSTRAINT fk_fe_comp_primer FOREIGN KEY (comp_primer) REFERENCES components_examples (id),
-	CONSTRAINT fk_fe_comp_paint FOREIGN KEY (comp_paint) REFERENCES components_examples (id),
-	CONSTRAINT fk_fe_comp_varnish FOREIGN KEY (comp_varnish) REFERENCES components_examples (id),
-	CONSTRAINT fk_fe_comp_accessory_1 FOREIGN KEY (comp_accessory_1) REFERENCES components_examples (id),
-	CONSTRAINT fk_fe_comp_accessory_2 FOREIGN KEY (comp_accessory_2) REFERENCES components_examples (id),
-	CONSTRAINT fk_fe_comp_accessory_3 FOREIGN KEY (comp_accessory_3) REFERENCES components_examples (id)
+	KEY prod_design_idx (prod_design_id),
+	KEY prod_type_idx (prod_type_id),
+	CONSTRAINT fk_pxmpl_prod_cat_id FOREIGN KEY (prod_cat_id) REFERENCES product_category (id),
+	CONSTRAINT fk_pxmpl_prod_design_id FOREIGN KEY (prod_design_id) REFERENCES product_designs (id),
+	CONSTRAINT fk_pxmpl_prod_type_id FOREIGN KEY (prod_type_id) REFERENCES product_types (id),
+	CONSTRAINT fk_pxmpl_image_id FOREIGN KEY (image_id) REFERENCES media (id)
 ) ENGINE=InnoDB;
 
-INSERT INTO furniture_examples VALUES
-	(NULL, 1, 1, 2, 'Доминион 1/4', 'CLFRARWTNRMK',
-		1, 0.1, NULL, 0, 7, 0.3, 12, 0.02, 13, 0.8, 16, 0.05, 17, 3, 18, 5,
-		19, 0.05, 20, 0.05, 21, 0.05, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT),
-	(NULL, 1, 2, 1, 'Людвик 1/4', 'BQFRTLWTPDSR',
-		2, 0.2, NULL, 0, 11, 0.3, 12, 0.02, 13, 0.9, 16, 0.06, 17, 3, 18, 5,
-		19, 0.05, 20, 0.05, 21, 0.05, 27, 1, DEFAULT, DEFAULT, DEFAULT, DEFAULT),
-	(NULL, 1, 1, 10, 'Камин виноград 1/4', 'BQFRFCWTPDSR',
-		2, 0.2, NULL, 0, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, 18, 5,
-		19, 0.05, 20, 0.05, 21, 0.05, 27, 1, DEFAULT, DEFAULT, DEFAULT, DEFAULT),
-	(NULL, 1, 1, 9, 'Виолетта 1/4', 'BQFRSTWTXXXX',
-		DEFAULT, DEFAULT, 3, 0.02, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT,
-		DEFAULT, DEFAULT, 20, DEFAULT, 21, 0.05, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT);
+-- ========================================  product_components (crossection with values)
+DROP TABLE IF EXISTS product_components;
+CREATE TABLE product_components (
+	prod_xmpl_id bigint UNSIGNED NOT NULL, -- link to xmpl
+	prod_comp_xmpl_id int UNSIGNED NOT NULL, -- link to component example
+	prod_comp_amount FLOAT NOT NULL,         -- component amount
+	PRIMARY KEY (prod_xmpl_id, prod_comp_xmpl_id),
+	CONSTRAINT fk_ptmp_prod_xmpl_id FOREIGN KEY (prod_xmpl_id) REFERENCES product_examples (id),
+	CONSTRAINT fk_ptmp_prod_comp_xmpl_id FOREIGN KEY (prod_comp_xmpl_id) REFERENCES components_examples (id)
+) ENGINE=InnoDB;
 
--- ========================================  furniture
-DROP TABLE IF EXISTS furniture;
-CREATE TABLE furniture (
-	id bigint UNSIGNED AUTO_INCREMENT,
-	example_id bigint UNSIGNED NOT NULL,
+INSERT INTO product_examples VALUES (1, 1, 1, 2, 'Доминион', 4, 'CLFRARWTNRMK4', NULL);
+INSERT INTO product_components VALUES
+	(1, 1, 160), (1, 3, 70), (1, 7, 0.8),
+	(1, 12, 5), (1, 13, 1), (1, 16, 0.5),
+	(1, 17, 0.4), (1, 18, 50), (1, 19, 20),
+	(1, 20, 15), (1, 21, 15);
+INSERT INTO product_examples VALUES (2, 1, 2, 1, 'Людвиг', 4, 'BQFRTLWTPDSR', NULL);
+INSERT INTO product_components VALUES
+	(2, 1, 160), (2, 3, 70), (2, 7, 0.8),
+	(2, 12, 5), (2, 13, 1), (2, 16, 0.5),
+	(2, 17, 0.4), (2, 18, 50), (2, 19, 20),
+	(2, 20, 15), (2, 21, 15);
+INSERT INTO product_examples VALUES (3, 1, 1, 10, 'Камин виноград', 4, 'BQFRFCWTPDSR', NULL);
+INSERT INTO product_components VALUES
+	(3, 1, 160), (3, 3, 70), (3, 18, 50), (3, 19, 20),
+	(3, 20, 15), (3, 21, 15);
+INSERT INTO product_examples VALUES (4, 1, 1, 9, 'Виолетта', 4, 'BQFRSTWTXXXX', NULL);
+INSERT INTO product_components VALUES
+	(4, 1, 160), (4, 3, 70), (4, 18, 50), (4, 21, 15);
+
+-- ========================================  products
+DROP TABLE IF EXISTS products;
+CREATE TABLE products (
+	id bigint UNSIGNED AUTO_INCREMENT, -- id of unique product
+	prod_xmpl_id bigint UNSIGNED NOT NULL,
 	readiness bool NOT NULL DEFAULT 0,
 	backorder_id bigint UNSIGNED DEFAULT NULL,
 	comentary varchar(128) DEFAULT NULL,
 	storage_id TINYINT UNSIGNED NOT NULL DEFAULT '1',
 	created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
-	KEY example_id (example_id),
-	KEY furn_readiness_idx (readiness),
-	KEY furn_backorder_idx (backorder_id),
-	KEY furn_created_atx (created_at),
- 	CONSTRAINT fk_furn_backorder_id FOREIGN KEY (backorder_id) REFERENCES backorders (id),
-	CONSTRAINT fk_furn_storage_id FOREIGN KEY (storage_id) REFERENCES warehouses (id),
-	CONSTRAINT fk_furn_examples_id FOREIGN KEY (example_id) REFERENCES furniture_examples (id)
+	KEY prod_xmpl_idx (prod_xmpl_id),
+	KEY prod_readiness_idx (readiness),
+	KEY prod_backorder_idx (backorder_id),
+	KEY prod_storage_idx (storage_id),
+	KEY prod_created_atx (created_at),
+	CONSTRAINT fk_prod_xmpl_id FOREIGN KEY (prod_xmpl_id) REFERENCES product_examples (id),
+ 	CONSTRAINT fk_prod_backorder_id FOREIGN KEY (backorder_id) REFERENCES backorders (id),
+	CONSTRAINT fk_prod_storage_id FOREIGN KEY (storage_id) REFERENCES warehouses (id)
 ) ENGINE=InnoDB;
 
 
@@ -363,7 +355,7 @@ CREATE TABLE income_log (
 
 DROP TRIGGER IF EXISTS log_users_on_insert;
 DROP TRIGGER IF EXISTS log_components_on_insert;
-DROP TRIGGER IF EXISTS log_furniture_on_insert;
+DROP TRIGGER IF EXISTS log_products_on_insert;
 
 DELIMITER //
 CREATE TRIGGER log_users_on_insert AFTER INSERT ON users
@@ -378,16 +370,16 @@ BEGIN
     INSERT INTO income_log VALUES (NEW.created_at, 'components', NEW.id, NEW.comp_examples_id);
 END//
 
-CREATE TRIGGER log_furniture_on_insert AFTER INSERT ON furniture
+CREATE TRIGGER log_products_on_insert AFTER INSERT ON products
 FOR EACH ROW
 BEGIN
-	INSERT INTO income_log VALUES (NEW.created_at, 'furniture', NEW.id, 
-		(SELECT fe.name name FROM furniture_examples fe WHERE fe.id = NEW.example_id));
+	INSERT INTO income_log VALUES (NEW.created_at, 'products', NEW.id,
+		(SELECT pe.name name FROM product_examples pe WHERE pe.id = NEW.prod_xmpl_id));
 END//
 DELIMITER ;
 
--- ========================================  add furn after log on
-INSERT INTO furniture VALUES
+-- ========================================  add products after log on
+INSERT INTO products VALUES
 	(NULL, 1, 1, DEFAULT, 'Legendary', 1, DEFAULT),
 	(NULL, 1, 0, DEFAULT, DEFAULT, 1, DEFAULT),
 	(NULL, 2, 1, DEFAULT, DEFAULT, 1, DEFAULT),
@@ -399,40 +391,39 @@ INSERT INTO furniture VALUES
 	(NULL, 4, 0, DEFAULT, DEFAULT, 1, DEFAULT);
 
 -- ================================================== Представления =====
--- ========================================  VIEV show all added furniture examples
-CREATE OR REPLACE VIEW show_all_furniture_examples AS
-SELECT fe.id id, product.name product, design.name design, kind.name kind, fe.name name,
-	color.color color, concat(fabric.name,' ', fabric.color) fabric, fe.SCU ___SCU___
-FROM furniture_examples fe
-LEFT JOIN product_types as product on product.id = fe.prod_type_id
-LEFT JOIN furniture_designs as design on design.id = fe.furn_design_id
-LEFT JOIN furniture_types as kind on kind.id = fe.furn_type_id
-LEFT JOIN components_examples as color on color.id = fe.comp_paint
-LEFT JOIN components_examples as fabric on fabric.id = fe.comp_fabric ORDER BY kind;
--- ========================================  VIEV show all furniture in stock
-CREATE OR REPLACE VIEW show_all_furniture_in_stock AS
-SELECT safe.*, (select if(fu.readiness, 'Ready', 'Not')) ready, fu.backorder_id bk_order, fu.comentary comentary, fu.created_at
-FROM furniture fu
-LEFT JOIN show_all_furniture_examples safe ON safe.id = fu.example_id
+-- ========================================  VIEW show all added products examples
+CREATE OR REPLACE VIEW show_all_product_examples AS
+SELECT pe.id id, product.name product, design.name design, kind.name kind, pe.name name,
+	pe.SCU ___SCU___
+FROM product_examples pe
+LEFT JOIN product_category as product on product.id = pe.prod_cat_id
+LEFT JOIN product_designs as design on design.id = pe.prod_design_id
+LEFT JOIN product_types as kind on kind.id = pe.prod_type_id
 ORDER BY kind;
--- ========================================  VIEV show unready products in stock
+
+-- ========================================  VIEV show all products in stock
+CREATE OR REPLACE VIEW show_all_products_in_stock AS
+SELECT safe.*, (select if(pr.readiness, 'Ready', 'Not')) ready, pr.backorder_id bk_order, pr.comentary comentary, pr.created_at
+FROM products pr
+LEFT JOIN show_all_product_examples safe ON safe.id = pr.prod_xmpl_id
+ORDER BY kind;
+-- ========================================  VIEW show unready products in stock
 CREATE OR REPLACE VIEW show_unready_products_in_stock AS
-SELECT safe.*, (select if(fu.readiness, 'Ready', 'Not')) ready, fu.backorder_id bk_order, fu.comentary comentary, fu.created_at
-FROM furniture fu
-LEFT JOIN show_all_furniture_examples safe ON safe.id = fu.example_id
+SELECT safe.*, (select if(pr.readiness, 'Ready', 'Not')) ready, pr.backorder_id bk_order, pr.comentary comentary, pr.created_at
+FROM products pr
+LEFT JOIN show_all_product_examples safe ON safe.id = pr.prod_xmpl_id
 WHERE readiness = 0
 ORDER BY kind;
 -- ================================================== Запросы =====
--- ========================================  show all added furniture examples
-SELECT * FROM show_all_furniture_examples;
+-- ========================================  show all added products examples
+SELECT * FROM show_all_product_examples;
 
--- ========================================  show all furniture in stock
-SELECT * FROM show_all_furniture_in_stock;
+-- ========================================  show all products in stock
+SELECT * FROM show_all_products_in_stock;
 
 -- ========================================  show unready products in stock
 SELECT * FROM show_unready_products_in_stock;
 
 -- ========================================  show log
 SELECT * FROM income_log;
-
 
